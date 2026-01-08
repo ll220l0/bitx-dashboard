@@ -1,9 +1,6 @@
 "use client";
 
-import { PanelRightCloseIcon, PanelRightOpenIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { DynamicIcon } from "lucide-react/dynamic";
-import Image from "next/image";
 
 interface SidebarToggleProps {
     isOpen: boolean;

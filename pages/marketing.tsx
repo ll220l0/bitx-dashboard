@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/table";
 import { PlusIcon, SearchIcon, EditIcon, BellIcon, Sparkles, CalendarIcon, UsersIcon, PlayIcon, SmartphoneIcon, TargetIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { DynamicIcon } from "lucide-react/dynamic";
 
 interface MarketingProps {
   isMarketingMiddleChatVisible?: boolean;
