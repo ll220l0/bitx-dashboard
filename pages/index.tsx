@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { statsCards, revenueData, recentUsers, checkoutConversionData } from './mockData';
+import { statsCards, revenueData, recentUsers, checkoutConversionData } from '@/lib/mockData';
 import { motion, AnimatePresence } from "framer-motion";
 import { XIcon } from "lucide-react";
 

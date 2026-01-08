@@ -241,3 +241,4 @@ export const checkoutConversionData = [
   { date: "Jan 04", rate: 2.5 },
   { date: "Jan 05", rate: 3.4 },
 ];
+
