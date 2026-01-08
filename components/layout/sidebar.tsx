@@ -32,6 +32,7 @@ import { ThemeToggle } from "../ui/theme-toggle";
 import Image from "next/image";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
+import { Spotlight } from "../Spotlight";
 
 interface SidebarProps {
     className?: string;
@@ -70,9 +71,12 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const router = useRouter();
-
+    const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     return (
         <>
+            {isSpotlightOpen && (
+                <Spotlight onClose={() => setIsSpotlightOpen(false)} />
+            )}
             <Button
                 variant="ghost"
                 size="icon"
@@ -144,8 +148,8 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
                                             return (
                                                 <Link href={item.href || "#"} key={item.label}>
                                                     <Button
-                                                        variant={isActive ? "secondary" : "ghost"}
-                                                        className="w-full justify-start relative mb-1.5 cursor-pointer rounded-full px-3"
+                                                        variant={isActive ? "ghost" : "ghost"}
+                                                        className={`w-full justify-start relative mb-1.5 cursor-pointer rounded-full px-3 ${isActive ? 'dark:bg-card' : ''}`}
                                                         onClick={() => setIsMobileMenuOpen(false)}
                                                     >
                                                         <Icon className="h-5 w-5 mr-3" />
@@ -274,8 +278,16 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
                             )}
                         </div>
 
-
-
+                        <div className="p-3">
+                            <div onClick={() => setIsSpotlightOpen(true)} className="flex flex-nowrap transition-all duration-300 ease-in-out cursor-pointer hover:bg-card flex-row items-center p-2 border border-border rounded-lg">
+                                <DynamicIcon name="search" className="size-3 ml-1 text-muted-foreground flex-shrink-0" />
+                              
+                                        <span className={`text-xs transition-all duration-300 overflow-hidden ease-in-out text-nowrap whitespace-nowrap ml-4 text-muted-foreground ${isCollapsed ? 'w-0' : 'block'}`}>Search</span>
+                                        <span className={` transition-all duration-300 overflow-hidden ease-in-out text-nowrap rounded-sm ml-auto  bg-card text-[9px] bg-card ${isCollapsed ? 'w-0' : 'block py-1 px-2'}`}>
+                                            ⌘ K
+                                        </span>
+                            </div>
+                        </div>
                         {/* Navigation */}
                         <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
                             {navItems.map((item) => {
@@ -287,8 +299,9 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
                                         <Button
                                             variant={isActive ? "secondary" : "ghost"}
                                             className={cn(
-                                                "w-full justify-start relative mb-1.5 cursor-pointer rounded-full",
-                                                isCollapsed ? "px-0 justify-center" : "px-3"
+                                                "w-full justify-start relative mb-1.5 cursor-pointer rounded-lg",
+                                                isCollapsed ? "px-0 justify-center" : "px-3",
+                                                isActive ? "dark:bg-card" : ""
                                             )}
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
