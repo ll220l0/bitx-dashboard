@@ -8,9 +8,14 @@ import { Button } from "@/components/ui/button";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { ResponsiveChart } from "@/components/charts/responsive-chart";
 
-interface AnalyticsProps {
-  isMiddleChatVisible?: boolean;
-  setIsMiddleChatVisible?: (value: boolean) => void;
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      date?: string;
+    };
+  }>;
 }
 
 const statsCards = [
@@ -150,12 +155,12 @@ const downloadsData = [
 
 // Top countries
 const countriesData = [
-  { country: "United States", flag: "🇺🇸", visitors: 42583, percentage: 34.2 },
-  { country: "United Kingdom", flag: "🇬🇧", visitors: 28492, percentage: 22.9 },
-  { country: "Germany", flag: "🇩🇪", visitors: 18734, percentage: 15.0 },
-  { country: "Canada", flag: "🇨🇦", visitors: 14926, percentage: 12.0 },
-  { country: "Australia", flag: "🇦🇺", visitors: 9848, percentage: 7.9 },
-  { country: "Others", flag: "🌍", visitors: 10000, percentage: 8.0 },
+  { country: "United States", flag: "US", visitors: 42583, percentage: 34.2 },
+  { country: "United Kingdom", flag: "UK", visitors: 28492, percentage: 22.9 },
+  { country: "Germany", flag: "DE", visitors: 18734, percentage: 15.0 },
+  { country: "Canada", flag: "CA", visitors: 14926, percentage: 12.0 },
+  { country: "Australia", flag: "AU", visitors: 9848, percentage: 7.9 },
+  { country: "Others", flag: "GL", visitors: 10000, percentage: 8.0 },
 ];
 
 // Device types
@@ -165,7 +170,21 @@ const deviceData = [
   { name: "Tablet", value: 14191, color: "rgb(168, 85, 247)" },
 ];
 
-export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChatVisible }: AnalyticsProps) {
+function VisitorsTooltip({ active, payload }: ChartTooltipProps) {
+  if (active && payload && payload.length > 0) {
+    return (
+      <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
+        <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
+        <div className="text-white dark:text-black text-sm font-bold">
+          Visitors: {payload[0].value.toLocaleString()}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+export default function Analytics() {
   const [timeRange, setTimeRange] = useState<'30' | '90'>('90');
 
   // Filter data based on selected time range
@@ -176,21 +195,6 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
       displayDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }));
   }, [timeRange]);
-
-  // Custom tooltip component
-  const VisitorsTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
-          <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
-          <div className="text-white dark:text-black text-sm font-bold">
-            Visitors: {payload[0].value.toLocaleString()}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <>
@@ -443,3 +447,4 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
     </>
   );
 }
+

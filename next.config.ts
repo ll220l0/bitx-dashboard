@@ -6,6 +6,18 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: isFastBuild,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+      },
+    ],
+  },
   experimental: {
     // Speeds up repeated `next build` runs by persisting Turbopack cache on disk.
     turbopackFileSystemCacheForBuild: true,

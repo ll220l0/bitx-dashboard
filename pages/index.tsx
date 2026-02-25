@@ -14,12 +14,45 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XIcon } from "lucide-react";
 import { ResponsiveChart } from "@/components/charts/responsive-chart";
 
-interface HomeProps {
-  isMiddleChatVisible?: boolean;
-  setIsMiddleChatVisible?: (value: boolean) => void;
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      date?: string;
+    };
+  }>;
 }
 
-export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisible }: HomeProps) {
+function MrrTooltip({ active, payload }: ChartTooltipProps) {
+  if (active && payload && payload.length > 0) {
+    return (
+      <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
+        <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
+        <div className="text-white dark:text-black text-sm font-bold">
+          MRR: ${payload[0].value.toLocaleString()}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+function CheckoutTooltip({ active, payload }: ChartTooltipProps) {
+  if (active && payload && payload.length > 0) {
+    return (
+      <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
+        <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
+        <div className="text-white dark:text-black text-sm font-bold">
+          Rate: {payload[0].value.toFixed(2)}%
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+export default function Home() {
   const [timeRange, setTimeRange] = useState<'30' | '90'>('90');
   const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
 
@@ -31,36 +64,6 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
       displayDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     }));
   }, [timeRange]);
-
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
-          <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
-          <div className="text-white dark:text-black text-sm font-bold">
-            MRR: ${payload[0].value.toLocaleString()}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Checkout tooltip component
-  const CheckoutTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
-          <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
-          <div className="text-white dark:text-black text-sm font-bold">
-            Rate: {payload[0].value.toFixed(2)}%
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <>
@@ -159,7 +162,7 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                   <YAxis
                     hide={true}
                   />
-                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
+                  <Tooltip content={<MrrTooltip />} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
                   <Area
                     type="monotone"
                     dataKey="mrr"
@@ -179,7 +182,7 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
           <Card className="bg-card border-none p-0 overflow-hidden md:flex-1">
             <div className="flex items-center justify-between bg-card px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
               <h2 className="text-sm font-semibold">Recent Users</h2>
-              <Link href="/contacts" className="flex flex-row items-center gap-1 text-xs">
+              <Link href="/users" className="flex flex-row items-center gap-1 text-xs">
                 View All
                 <ArrowRightIcon className="w-3 h-3 ml-1" />
               </Link>
@@ -351,15 +354,15 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                     <h3 className="text-sm font-semibold mb-3">Overview</h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Your MRR is growing steadily at $1,760, up 3.4% from last week</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>You have 49 active power users (4+ days/week), showing strong engagement</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Free to paid conversion rate is at 6.2%, which is above industry average</span>
                       </li>
                     </ul>
@@ -370,15 +373,15 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                     <h3 className="text-sm font-semibold mb-3">Growth Trends</h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>MRR has shown consistent upward trajectory over the last 90 days</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Recent user signups include 3 Pro plan subscribers in the last week</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Checkout conversion rate is volatile, ranging from 1% to 5.8%</span>
                       </li>
                     </ul>
@@ -389,15 +392,15 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                     <h3 className="text-sm font-semibold mb-3">Key Metrics</h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Account balance of $655.19 is available for withdrawal</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Last successful transaction was $11,651.42 on Jan 5, 2026</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Failed dictations remain low at 0.35% over the last 24 hours</span>
                       </li>
                     </ul>
@@ -408,19 +411,19 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                     <h3 className="text-sm font-semibold mb-3">Recommendations</h3>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Consider A/B testing the checkout flow to stabilize conversion rates</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Engage with power users for testimonials and case studies</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Monitor the 49 active power users for potential upsell opportunities</span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-foreground">•</span>
+                        <span className="text-foreground">-</span>
                         <span>Review recent user feedback to identify common feature requests</span>
                       </li>
                     </ul>
@@ -442,3 +445,4 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
     </>
   );
 }
+

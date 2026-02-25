@@ -3,12 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
+    "dev": "next dev",
+    "dev:webpack": "next dev --webpack",
     "dev:turbo": "next dev",
+    "dev:unlock": "node -e \"const fs=require('fs');try{fs.unlinkSync('.next/dev/lock');console.log('Removed .next/dev/lock')}catch(e){if(e.code!=='ENOENT')throw e;console.log('No lock file')}\"",
     "build": "next build",
     "build:fast": "cross-env NEXT_FAST_BUILD=1 next build",
     "start": "next start",
     "lint": "eslint"
+  },
+  "engines": {
+    "node": "20.x || 22.x"
   },
   "dependencies": {
     "@heroui/react": "^2.8.6",

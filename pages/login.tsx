@@ -6,7 +6,7 @@ import Link from "next/link";
 
 
 
-export default function Signup() {
+export default function Login() {
   return (
     <section id="hero" className="py-10 px-4 sm:px-6 lg:px-8 min-h-screen flex justify-center items-center">
       <div className="max-w-7xl mx-auto my-auto w-full">
@@ -69,7 +69,7 @@ export default function Signup() {
                     type="password"
                     id="password"
                     className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-highlight focus:border-transparent outline-none transition-all text-zinc-900 dark:text-white"
-                    placeholder="••••••••"
+                    placeholder="********"
                   />
                 </div>
 
@@ -81,13 +81,13 @@ export default function Signup() {
                   />
                   <label htmlFor="terms" className="text-sm text-zinc-600 dark:text-zinc-400">
                     I agree to the{" "}
-                    <a href="/terms" className="text-zinc-900 dark:text-white hover:text-highlight underline">
+                    <Link href="/terms" className="text-zinc-900 dark:text-white hover:text-highlight underline">
                       Terms and Conditions
-                    </a>{" "}
+                    </Link>{" "}
                     and{" "}
-                    <a href="/privacy-policy" className="text-zinc-900 dark:text-white hover:text-highlight underline">
+                    <Link href="/privacy-policy" className="text-zinc-900 dark:text-white hover:text-highlight underline">
                       Privacy Policy
-                    </a>
+                    </Link>
                   </label>
                 </div>
 
@@ -95,15 +95,12 @@ export default function Signup() {
                   type="submit"
                   className="w-full flex items-center text-white dark:text-black justify-center cursor-pointer px-6 py-3 text-black bg-black dark:bg-white hover:bg-highlight-hover text-highlight-text rounded-xl font-semibold transition-colors"
                 >
-                  Create Account
+                  Sign In
                 </Link>
               </form>
 
               <p className="text-center text-sm text-zinc-600 dark:text-zinc-400 mt-6">
-                Already have an account?{" "}
-                <a href="/login" className="text-zinc-900 dark:text-white font-semibold hover:underline">
-                  Sign in
-                </a>
+                Need access? Contact your administrator.
               </p>
           </motion.div>
         </div>
@@ -112,3 +109,4 @@ export default function Signup() {
     </section>
   );
 }
+

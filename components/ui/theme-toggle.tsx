@@ -1,44 +1,36 @@
 "use client";
 
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Button } from "./button";
 
-export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => {};
 
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    setMounted(true);
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
-    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    setTheme(initialTheme);
-    
-    // Apply theme to document
-    if (initialTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
+function getInitialTheme(): "light" | "dark" {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
+
+  document.documentElement.classList.toggle("dark", initialTheme === "dark");
+  return initialTheme;
+}
+
+export function ThemeToggle() {
+  const isHydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
+  const [theme, setTheme] = useState<"light" | "dark">(getInitialTheme);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
-  // Avoid hydration mismatch by not rendering until mounted
-  if (!mounted) {
+  if (!isHydrated) {
     return (
       <Button variant="ghost" size="icon" disabled>
         <SunIcon className="h-5 w-5" />

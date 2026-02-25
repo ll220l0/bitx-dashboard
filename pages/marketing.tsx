@@ -13,13 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, SearchIcon, EditIcon, BellIcon, Sparkles, CalendarIcon, UsersIcon, PlayIcon, SmartphoneIcon, TargetIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, EditIcon, BellIcon, CalendarIcon, UsersIcon, PlayIcon, SmartphoneIcon, TargetIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
-interface MarketingProps {
-  isMarketingMiddleChatVisible?: boolean;
-  setIsMarketingMiddleChatVisible?: (value: boolean) => void;
-}
 
 interface Campaign {
   id: number;
@@ -140,7 +135,7 @@ const getFrequencyLabel = (frequency?: string) => {
   return labels[frequency || ""] || "One-Time";
 };
 
-export default function Marketing({ isMarketingMiddleChatVisible = false, setIsMarketingMiddleChatVisible }: MarketingProps) {
+export default function Marketing() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCampaigns = mockCampaigns.filter(
@@ -253,7 +248,7 @@ export default function Marketing({ isMarketingMiddleChatVisible = false, setIsM
                           {getFrequencyLabel(campaign.frequency)}
                         </div>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -383,3 +378,4 @@ export default function Marketing({ isMarketingMiddleChatVisible = false, setIsM
     </>
   );
 }
+

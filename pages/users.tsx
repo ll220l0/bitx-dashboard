@@ -17,10 +17,6 @@ import {
 import { PlusIcon, SearchIcon, PencilIcon, MailIcon, XIcon, ImageIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
-interface UsersProps {
-  isUsersMiddleChatVisible?: boolean;
-  setIsUsersMiddleChatVisible?: (value: boolean) => void;
-}
 
 interface User {
   id: number;
@@ -114,7 +110,8 @@ const mockUsers: User[] = [
   },
 ];
 
-export default function Users({ isUsersMiddleChatVisible = false, setIsUsersMiddleChatVisible }: UsersProps) {
+export default function Users() {
+  const [users, setUsers] = useState<User[]>(mockUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [newUser, setNewUser] = useState({
@@ -124,15 +121,34 @@ export default function Users({ isUsersMiddleChatVisible = false, setIsUsersMidd
     avatar: "",
   });
 
-  const filteredUsers = mockUsers.filter(
+  const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddUser = () => {
-    // Handle user creation here
-    console.log("Adding user:", newUser);
+    if (!newUser.name || !newUser.email) {
+      return;
+    }
+
+    const nextId = users.length > 0 ? Math.max(...users.map((user) => user.id)) + 1 : 1;
+    const now = new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const userToAdd: User = {
+      id: nextId,
+      name: newUser.name.trim(),
+      email: newUser.email.trim(),
+      plan: newUser.plan,
+      avatar: newUser.avatar || `https://i.pravatar.cc/150?u=${encodeURIComponent(newUser.email)}`,
+      dateCreated: now,
+    };
+
+    setUsers((prev) => [userToAdd, ...prev]);
     setIsDrawerOpen(false);
     setNewUser({ name: "", email: "", plan: "Free", avatar: "" });
   };
@@ -154,10 +170,10 @@ export default function Users({ isUsersMiddleChatVisible = false, setIsUsersMidd
         <h1 className='text-lg font-bold'>Users</h1>
         <div className="ml-4 flex gap-2">
           <Badge variant="outline" className="text-xs">
-            {mockUsers.length} Users
+            {users.length} Users
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {mockUsers.filter(u => u.plan === "Pro").length} Pro Users
+            {users.filter(u => u.plan === "Pro").length} Pro Users
           </Badge>
         </div>
         <div className="ml-auto flex gap-2">
@@ -182,7 +198,7 @@ export default function Users({ isUsersMiddleChatVisible = false, setIsUsersMidd
             />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Showing {filteredUsers.length} of {mockUsers.length} users
+            Showing {filteredUsers.length} of {users.length} users
           </p>
         </div>
 

@@ -18,7 +18,7 @@ export const statsCards = [
     icon: UsersIcon,
   },
   {
-    title: "Free → Paid Conv.",
+    title: "Free -> Paid Conv.",
     value: "6.2%",
     change: "+1.2%",
     subtext: "at word limit",
@@ -241,4 +241,5 @@ export const checkoutConversionData = [
   { date: "Jan 04", rate: 2.5 },
   { date: "Jan 05", rate: 3.4 },
 ];
+
 

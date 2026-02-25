@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dashboard
 
-## Getting Started
+Admin dashboard built with `Next.js`, `React`, `TypeScript`, `Tailwind`, `Radix UI`, and `Recharts`.
 
-First, run the development server:
+## Requirements
+
+- `Node.js` LTS (`20.x` or `22.x`)
+- `npm` (bundled with Node)
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Default dev server uses Turbopack: `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Fallback webpack mode:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev:webpack
+```
 
-## Learn More
+## Build & Checks
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Troubleshooting (Windows)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### `Unable to acquire lock ... .next/dev/lock`
 
-## Deploy on Vercel
+1. Stop stale `next dev` processes:
+```powershell
+taskkill /F /IM node.exe
+```
+2. Remove lock file:
+```powershell
+npm run dev:unlock
+```
+3. Start dev again:
+```powershell
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Dev compilation is very slow / appears infinite
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Use Node LTS (`20.x` or `22.x`), not experimental/new major releases.
+2. Prefer Turbopack (`npm run dev`) over webpack.
+3. Avoid running the repo from synced folders (OneDrive/Dropbox). Use a local path like `C:\dev\dashboard`.
+4. Clear `.next` and restart:
+```powershell
+rmdir /s /q .next
+npm run dev
+```

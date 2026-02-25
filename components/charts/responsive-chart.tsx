@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode, useSyncExternalStore } from "react";
 import { ResponsiveContainer } from "recharts";
+
+const emptySubscribe = () => () => {};
 
 interface ResponsiveChartProps {
   children: ReactNode;
@@ -22,14 +24,10 @@ export function ResponsiveChart({
   aspect,
   debounce,
 }: ResponsiveChartProps) {
-  const [mounted, setMounted] = useState(false);
+  const isHydrated = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
+  if (!isHydrated) {
+    return <div className="h-full w-full" />;
   }
 
   return (

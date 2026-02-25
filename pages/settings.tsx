@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -21,41 +21,53 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
+const DEFAULT_SETTINGS = {
+  // Profile
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+  phone: "+1 (555) 123-4567",
+  company: "Company Inc.",
+  // Notifications
+  emailNotifications: true,
+  pushNotifications: true,
+  weeklyDigest: true,
+  // Preferences
+  language: "en",
+  timezone: "America/New_York",
+  currency: "USD",
+  theme: "system",
+};
+
+function getInitialSettings() {
+  if (typeof window === "undefined") {
+    return DEFAULT_SETTINGS;
+  }
+
+  const merged = { ...DEFAULT_SETTINGS };
+  const savedSettings = localStorage.getItem("dashboardSettings");
+  if (savedSettings) {
+    try {
+      Object.assign(merged, JSON.parse(savedSettings));
+    } catch {
+      // Ignore invalid local storage payloads.
+    }
+  }
+
+  const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+  const savedThemeMode = localStorage.getItem("themeMode") as "light" | "dark" | "system" | null;
+  if (savedThemeMode) {
+    merged.theme = savedThemeMode;
+  } else if (savedTheme) {
+    merged.theme = savedTheme;
+  }
+
+  return merged;
+}
+
 export default function Settings() {
   const [isSaving, setIsSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [formData, setFormData] = useState({
-    // Profile
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    company: "Company Inc.",
-    
-    // Notifications
-    emailNotifications: true,
-    pushNotifications: true,
-    weeklyDigest: true,
-    
-    // Preferences
-    language: "en",
-    timezone: "America/New_York",
-    currency: "USD",
-    theme: "system",
-  });
-
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    setMounted(true);
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const savedThemeMode = localStorage.getItem("themeMode") as "light" | "dark" | "system" | null;
-    
-    if (savedThemeMode) {
-      setFormData((prev) => ({ ...prev, theme: savedThemeMode }));
-    } else if (savedTheme) {
-      setFormData((prev) => ({ ...prev, theme: savedTheme }));
-    }
-  }, []);
+  const [formData, setFormData] = useState(getInitialSettings);
 
   // Apply theme function
   const applyTheme = (themeMode: string) => {
@@ -80,10 +92,10 @@ export default function Settings() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -106,7 +118,7 @@ export default function Settings() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    console.log("Settings saved:", formData);
+    localStorage.setItem("dashboardSettings", JSON.stringify(formData));
     setIsSaving(false);
   };
 
@@ -255,7 +267,12 @@ export default function Settings() {
                   <p className="font-medium">Email Notifications</p>
                   <p className="text-sm text-muted-foreground">Receive email updates about your account</p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={formData.emailNotifications}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, emailNotifications: checked }))
+                  }
+                />
               </div>
 
               {/* Push Notifications */}
@@ -264,7 +281,12 @@ export default function Settings() {
                   <p className="font-medium">Push Notifications</p>
                   <p className="text-sm text-muted-foreground">Receive push notifications on your device</p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={formData.pushNotifications}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, pushNotifications: checked }))
+                  }
+                />
               </div>
 
               {/* Weekly Digest */}
@@ -273,7 +295,12 @@ export default function Settings() {
                   <p className="font-medium">Weekly Digest</p>
                   <p className="text-sm text-muted-foreground">Get a weekly summary of your activity</p>
                 </div>
-                <Switch />
+                <Switch
+                  checked={formData.weeklyDigest}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, weeklyDigest: checked }))
+                  }
+                />
               </div>
             </div>
           </Card>
@@ -351,9 +378,9 @@ export default function Settings() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="USD">USD ($)</SelectItem>
-                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                    <SelectItem value="GBP">GBP (£)</SelectItem>
-                    <SelectItem value="JPY">JPY (¥)</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="GBP">GBP</SelectItem>
+                    <SelectItem value="JPY">JPY</SelectItem>
                     <SelectItem value="AUD">AUD (A$)</SelectItem>
                     <SelectItem value="CAD">CAD (C$)</SelectItem>
                   </SelectContent>
@@ -422,3 +449,4 @@ export default function Settings() {
     </>
   );
 }
+

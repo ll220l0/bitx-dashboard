@@ -284,7 +284,7 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
                               
                                         <span className={`text-xs transition-all duration-300 overflow-hidden ease-in-out text-nowrap whitespace-nowrap ml-4 text-muted-foreground ${isCollapsed ? 'w-0' : 'block'}`}>Search</span>
                                         <span className={` transition-all duration-300 overflow-hidden ease-in-out text-nowrap rounded-sm ml-auto  bg-card text-[9px] bg-card ${isCollapsed ? 'w-0' : 'block py-1 px-2'}`}>
-                                            ⌘ K
+                                            Ctrl K
                                         </span>
                             </div>
                         </div>
@@ -400,4 +400,5 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
         </>
     );
 }
+
 

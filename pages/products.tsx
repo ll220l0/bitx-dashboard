@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SearchIcon, PlusIcon, XIcon, ImageIcon, DollarSignIcon, PackageIcon } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +18,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
-
-interface ProductsProps {
-  isMiddleChatVisible?: boolean;
-  setIsMiddleChatVisible?: (value: boolean) => void;
-}
 
 interface Product {
   id: number;
@@ -100,7 +96,8 @@ const mockProducts: Product[] = [
 const categories = ["Electronics", "Footwear", "Accessories", "Bags", "Clothing", "Home & Living"];
 const statusOptions = ["In Stock", "Low Stock", "Out of Stock"] as const;
 
-export default function Products({ isMiddleChatVisible = false, setIsMiddleChatVisible }: ProductsProps) {
+export default function Products() {
+  const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [newProduct, setNewProduct] = useState({
@@ -114,14 +111,33 @@ export default function Products({ isMiddleChatVisible = false, setIsMiddleChatV
     image: "",
   });
 
-  const filteredProducts = mockProducts.filter(product =>
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.sku.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddProduct = () => {
-    console.log("Adding product:", newProduct);
+    if (!newProduct.name || !newProduct.sku || !newProduct.price) {
+      return;
+    }
+
+    const parsedPrice = Number.parseFloat(newProduct.price);
+    const parsedStock = Number.parseInt(newProduct.stock || "0", 10);
+    const nextId = products.length > 0 ? Math.max(...products.map((product) => product.id)) + 1 : 1;
+
+    const productToAdd: Product = {
+      id: nextId,
+      image: newProduct.image || "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&h=200&fit=crop",
+      name: newProduct.name.trim(),
+      category: newProduct.category,
+      price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
+      stock: Number.isNaN(parsedStock) ? 0 : parsedStock,
+      status: newProduct.status,
+      sku: newProduct.sku.trim(),
+    };
+
+    setProducts((prev) => [productToAdd, ...prev]);
     setIsDrawerOpen(false);
     setNewProduct({
       name: "",
@@ -165,7 +181,7 @@ export default function Products({ isMiddleChatVisible = false, setIsMiddleChatV
         <h1 className='text-lg font-bold'>Products</h1>
         <div className="ml-4 flex gap-2">
           <Badge variant="outline" className="text-xs">
-            {mockProducts.length} Products
+            {products.length} Products
           </Badge>
         </div>
         <div className="ml-auto flex gap-2">
@@ -190,7 +206,7 @@ export default function Products({ isMiddleChatVisible = false, setIsMiddleChatV
             />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Showing {filteredProducts.length} of {mockProducts.length} products
+            Showing {filteredProducts.length} of {products.length} products
           </p>
         </div>
 
@@ -220,9 +236,11 @@ export default function Products({ isMiddleChatVisible = false, setIsMiddleChatV
                   <TableRow key={product.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
                     <TableCell>
                       <div className="relative w-16 h-16 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-800">
-                        <img
+                        <Image
                           src={product.image}
                           alt={product.name}
+                          fill
+                          sizes="64px"
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -279,9 +297,11 @@ export default function Products({ isMiddleChatVisible = false, setIsMiddleChatV
                 <div className="flex items-start gap-4">
                   {/* Product Image */}
                   <div className="relative w-20 h-20 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-800 flex-shrink-0">
-                    <img
+                    <Image
                       src={product.image}
                       alt={product.name}
+                      fill
+                      sizes="80px"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -364,7 +384,14 @@ export default function Products({ isMiddleChatVisible = false, setIsMiddleChatV
                     <div className="flex items-center gap-4">
                       <div className="relative w-24 h-24 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 overflow-hidden">
                         {newProduct.image ? (
-                          <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
+                          <Image
+                            src={newProduct.image}
+                            alt="Preview"
+                            fill
+                            sizes="96px"
+                            unoptimized
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-900">
                             <ImageIcon className="w-8 h-8 text-muted-foreground" />
