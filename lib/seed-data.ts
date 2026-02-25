@@ -1,0 +1,111 @@
+import type { DashboardSettings, ProductRecord, UserRecord } from "@/lib/types";
+
+export const seedUsers: UserRecord[] = [
+  {
+    id: 1,
+    avatar: "https://i.pravatar.cc/150?u=sarah.thompson@example.com",
+    name: "Sarah Thompson",
+    email: "sarah.thompson@example.com",
+    plan: "Pro",
+    dateCreated: "Dec 15, 2025",
+  },
+  {
+    id: 2,
+    avatar: "https://i.pravatar.cc/150?u=michael.chen@example.com",
+    name: "Michael Chen",
+    email: "michael.chen@example.com",
+    plan: "Pro",
+    dateCreated: "Dec 12, 2025",
+  },
+  {
+    id: 3,
+    avatar: "https://i.pravatar.cc/150?u=emma.wilson@example.com",
+    name: "Emma Wilson",
+    email: "emma.wilson@example.com",
+    plan: "Free",
+    dateCreated: "Dec 10, 2025",
+  },
+  {
+    id: 4,
+    avatar: "https://i.pravatar.cc/150?u=carlos.rodriguez@example.com",
+    name: "Carlos Rodriguez",
+    email: "carlos.rodriguez@example.com",
+    plan: "Pro",
+    dateCreated: "Dec 8, 2025",
+  },
+  {
+    id: 5,
+    avatar: "https://i.pravatar.cc/150?u=yuki.tanaka@example.com",
+    name: "Yuki Tanaka",
+    email: "yuki.tanaka@example.com",
+    plan: "Free",
+    dateCreated: "Dec 5, 2025",
+  },
+  {
+    id: 6,
+    avatar: "https://i.pravatar.cc/150?u=sophie.dubois@example.com",
+    name: "Sophie Dubois",
+    email: "sophie.dubois@example.com",
+    plan: "Pro",
+    dateCreated: "Dec 3, 2025",
+  },
+];
+
+export const seedProducts: ProductRecord[] = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop",
+    name: "Premium Wireless Headphones",
+    category: "Electronics",
+    price: 299.99,
+    stock: 45,
+    status: "In Stock",
+    sku: "WH-2024-001",
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop",
+    name: "Smart Watch Pro",
+    category: "Electronics",
+    price: 399.99,
+    stock: 12,
+    status: "Low Stock",
+    sku: "SW-2024-002",
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=200&h=200&fit=crop",
+    name: "Designer Sneakers",
+    category: "Footwear",
+    price: 159.99,
+    stock: 0,
+    status: "Out of Stock",
+    sku: "SN-2024-003",
+  },
+  {
+    id: 4,
+    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&h=200&fit=crop",
+    name: "Classic Sunglasses",
+    category: "Accessories",
+    price: 89.99,
+    stock: 78,
+    status: "In Stock",
+    sku: "SG-2024-004",
+  },
+];
+
+export const seedSettings: DashboardSettings = {
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+  phone: "+1 (555) 123-4567",
+  company: "Company Inc.",
+  emailNotifications: true,
+  pushNotifications: true,
+  weeklyDigest: true,
+  language: "en",
+  timezone: "America/New_York",
+  currency: "USD",
+  theme: "system",
+};
+

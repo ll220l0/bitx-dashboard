@@ -26,8 +26,20 @@ npm run dev:webpack
 
 ```bash
 npm run lint
+npm run typecheck
+npm run test
 npm run build
 ```
+
+## API & Persistence
+
+The app now uses API routes for writable entities:
+
+- `GET/POST /api/users`
+- `GET/POST /api/products`
+- `GET/PUT /api/settings`
+
+Data is persisted to `.data/dashboard.json` in the project root (created automatically on first run).
 
 ## Troubleshooting (Windows)
 
@@ -55,4 +67,12 @@ npm run dev
 ```powershell
 rmdir /s /q .next
 npm run dev
+```
+
+### Reset local API data
+
+If you want to reset users/products/settings back to seed values:
+
+```powershell
+rmdir /s /q .data
 ```

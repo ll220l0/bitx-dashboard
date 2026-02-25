@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -20,8 +20,9 @@ import {
   SaveIcon,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import type { DashboardSettings } from "@/lib/types";
 
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: DashboardSettings = {
   // Profile
   firstName: "John",
   lastName: "Doe",
@@ -39,7 +40,7 @@ const DEFAULT_SETTINGS = {
   theme: "system",
 };
 
-function getInitialSettings() {
+function getInitialSettings(): DashboardSettings {
   if (typeof window === "undefined") {
     return DEFAULT_SETTINGS;
   }
@@ -68,6 +69,38 @@ function getInitialSettings() {
 export default function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(getInitialSettings);
+  const [requestError, setRequestError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadSettings = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        if (!response.ok) {
+          throw new Error("Failed to load settings.");
+        }
+        const data = (await response.json()) as { settings: DashboardSettings };
+        if (active) {
+          setFormData((prev) => ({
+            ...data.settings,
+            // Keep local theme mode if user already selected it on this device.
+            theme: prev.theme,
+          }));
+          setRequestError(null);
+        }
+      } catch {
+        if (active) {
+          setRequestError("Could not load settings from API. Using local values.");
+        }
+      }
+    };
+
+    void loadSettings();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Apply theme function
   const applyTheme = (themeMode: string) => {
@@ -114,12 +147,26 @@ export default function Settings() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    try {
+      const response = await fetch("/api/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        throw new Error("Failed to save settings.");
+      }
 
-    localStorage.setItem("dashboardSettings", JSON.stringify(formData));
-    setIsSaving(false);
+      localStorage.setItem("dashboardSettings", JSON.stringify(formData));
+      setRequestError(null);
+    } catch {
+      setRequestError("Could not save settings. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -136,6 +183,7 @@ export default function Settings() {
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
+        {requestError && <p className="ml-4 text-xs text-red-500">{requestError}</p>}
       </div>
 
       <div className="max-w-4xl w-full mx-auto flex-1 p-8">

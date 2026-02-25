@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SearchIcon, PlusIcon, XIcon, ImageIcon, DollarSignIcon, PackageIcon } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -18,88 +18,18 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
-
-interface Product {
-  id: number;
-  image: string;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  status: "In Stock" | "Low Stock" | "Out of Stock";
-  sku: string;
-}
-
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop",
-    name: "Premium Wireless Headphones",
-    category: "Electronics",
-    price: 299.99,
-    stock: 45,
-    status: "In Stock",
-    sku: "WH-2024-001"
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop",
-    name: "Smart Watch Pro",
-    category: "Electronics",
-    price: 399.99,
-    stock: 12,
-    status: "Low Stock",
-    sku: "SW-2024-002"
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=200&h=200&fit=crop",
-    name: "Designer Sneakers",
-    category: "Footwear",
-    price: 159.99,
-    stock: 0,
-    status: "Out of Stock",
-    sku: "SN-2024-003"
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&h=200&fit=crop",
-    name: "Classic Sunglasses",
-    category: "Accessories",
-    price: 89.99,
-    stock: 78,
-    status: "In Stock",
-    sku: "SG-2024-004"
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop",
-    name: "Leather Backpack",
-    category: "Bags",
-    price: 129.99,
-    stock: 34,
-    status: "In Stock",
-    sku: "BP-2024-005"
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=200&h=200&fit=crop",
-    name: "Minimalist Watch",
-    category: "Accessories",
-    price: 199.99,
-    stock: 8,
-    status: "Low Stock",
-    sku: "MW-2024-006"
-  },
-];
+import { seedProducts } from "@/lib/seed-data";
+import type { NewProductPayload, ProductRecord } from "@/lib/types";
 
 const categories = ["Electronics", "Footwear", "Accessories", "Bags", "Clothing", "Home & Living"];
 const statusOptions = ["In Stock", "Low Stock", "Out of Stock"] as const;
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<ProductRecord[]>(seedProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [requestError, setRequestError] = useState<string | null>(null);
   const [newProduct, setNewProduct] = useState({
     name: "",
     category: "Electronics",
@@ -111,24 +41,53 @@ export default function Products() {
     image: "",
   });
 
+  useEffect(() => {
+    let active = true;
+
+    const loadProducts = async () => {
+      try {
+        const response = await fetch("/api/products");
+        if (!response.ok) {
+          throw new Error("Failed to load products.");
+        }
+        const data = (await response.json()) as { products: ProductRecord[] };
+        if (active) {
+          setProducts(data.products);
+          setRequestError(null);
+        }
+      } catch {
+        if (active) {
+          setRequestError("Could not load products from API. Showing local data.");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadProducts();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.sku.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.sku || !newProduct.price) {
       return;
     }
 
     const parsedPrice = Number.parseFloat(newProduct.price);
     const parsedStock = Number.parseInt(newProduct.stock || "0", 10);
-    const nextId = products.length > 0 ? Math.max(...products.map((product) => product.id)) + 1 : 1;
 
-    const productToAdd: Product = {
-      id: nextId,
-      image: newProduct.image || "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&h=200&fit=crop",
+    const payload: NewProductPayload = {
+      image: newProduct.image || undefined,
       name: newProduct.name.trim(),
       category: newProduct.category,
       price: Number.isNaN(parsedPrice) ? 0 : parsedPrice,
@@ -137,18 +96,36 @@ export default function Products() {
       sku: newProduct.sku.trim(),
     };
 
-    setProducts((prev) => [productToAdd, ...prev]);
-    setIsDrawerOpen(false);
-    setNewProduct({
-      name: "",
-      category: "Electronics",
-      price: "",
-      stock: "",
-      status: "In Stock",
-      sku: "",
-      description: "",
-      image: "",
-    });
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create product.");
+      }
+
+      const data = (await response.json()) as { product: ProductRecord };
+      setProducts((prev) => [data.product, ...prev]);
+      setIsDrawerOpen(false);
+      setNewProduct({
+        name: "",
+        category: "Electronics",
+        price: "",
+        stock: "",
+        status: "In Stock",
+        sku: "",
+        description: "",
+        image: "",
+      });
+      setRequestError(null);
+    } catch {
+      setRequestError("Could not create product. Please try again.");
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,6 +185,8 @@ export default function Products() {
           <p className="text-sm text-muted-foreground mt-2">
             Showing {filteredProducts.length} of {products.length} products
           </p>
+          {isLoading && <p className="text-xs text-muted-foreground mt-1">Loading products...</p>}
+          {requestError && <p className="text-xs text-red-500 mt-1">{requestError}</p>}
         </div>
 
         {/* Desktop Table - Hidden on Mobile */}

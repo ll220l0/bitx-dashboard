@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
@@ -17,103 +17,15 @@ import {
 import { PlusIcon, SearchIcon, PencilIcon, MailIcon, XIcon, ImageIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface User {
-  id: number;
-  avatar: string;
-  name: string;
-  email: string;
-  plan: "Free" | "Pro";
-  dateCreated: string;
-}
-
-const mockUsers: User[] = [
-  {
-    id: 1,
-    avatar: "https://i.pravatar.cc/150?u=sarah.thompson@example.com",
-    name: "Sarah Thompson",
-    email: "sarah.thompson@example.com",
-    plan: "Pro",
-    dateCreated: "Dec 15, 2025",
-  },
-  {
-    id: 2,
-    avatar: "https://i.pravatar.cc/150?u=michael.chen@example.com",
-    name: "Michael Chen",
-    email: "michael.chen@example.com",
-    plan: "Pro",
-    dateCreated: "Dec 12, 2025",
-  },
-  {
-    id: 3,
-    avatar: "https://i.pravatar.cc/150?u=emma.wilson@example.com",
-    name: "Emma Wilson",
-    email: "emma.wilson@example.com",
-    plan: "Free",
-    dateCreated: "Dec 10, 2025",
-  },
-  {
-    id: 4,
-    avatar: "https://i.pravatar.cc/150?u=carlos.rodriguez@example.com",
-    name: "Carlos Rodriguez",
-    email: "carlos.rodriguez@example.com",
-    plan: "Pro",
-    dateCreated: "Dec 8, 2025",
-  },
-  {
-    id: 5,
-    avatar: "https://i.pravatar.cc/150?u=yuki.tanaka@example.com",
-    name: "Yuki Tanaka",
-    email: "yuki.tanaka@example.com",
-    plan: "Free",
-    dateCreated: "Dec 5, 2025",
-  },
-  {
-    id: 6,
-    avatar: "https://i.pravatar.cc/150?u=sophie.dubois@example.com",
-    name: "Sophie Dubois",
-    email: "sophie.dubois@example.com",
-    plan: "Pro",
-    dateCreated: "Dec 3, 2025",
-  },
-  {
-    id: 7,
-    avatar: "https://i.pravatar.cc/150?u=james.mitchell@example.com",
-    name: "James Mitchell",
-    email: "james.mitchell@example.com",
-    plan: "Pro",
-    dateCreated: "Dec 1, 2025",
-  },
-  {
-    id: 8,
-    avatar: "https://i.pravatar.cc/150?u=priya.sharma@example.com",
-    name: "Priya Sharma",
-    email: "priya.sharma@example.com",
-    plan: "Free",
-    dateCreated: "Nov 28, 2025",
-  },
-  {
-    id: 9,
-    avatar: "https://i.pravatar.cc/150?u=david.martinez@example.com",
-    name: "David Martinez",
-    email: "david.martinez@example.com",
-    plan: "Pro",
-    dateCreated: "Nov 25, 2025",
-  },
-  {
-    id: 10,
-    avatar: "https://i.pravatar.cc/150?u=lisa.anderson@example.com",
-    name: "Lisa Anderson",
-    email: "lisa.anderson@example.com",
-    plan: "Free",
-    dateCreated: "Nov 22, 2025",
-  },
-];
+import { seedUsers } from "@/lib/seed-data";
+import type { NewUserPayload, UserRecord } from "@/lib/types";
 
 export default function Users() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<UserRecord[]>(seedUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [requestError, setRequestError] = useState<string | null>(null);
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -121,36 +33,76 @@ export default function Users() {
     avatar: "",
   });
 
+  useEffect(() => {
+    let active = true;
+
+    const loadUsers = async () => {
+      try {
+        const response = await fetch("/api/users");
+        if (!response.ok) {
+          throw new Error("Failed to load users.");
+        }
+        const data = (await response.json()) as { users: UserRecord[] };
+        if (active) {
+          setUsers(data.users);
+          setRequestError(null);
+        }
+      } catch {
+        if (active) {
+          setRequestError("Could not load users from API. Showing local data.");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadUsers();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUser.name || !newUser.email) {
       return;
     }
 
-    const nextId = users.length > 0 ? Math.max(...users.map((user) => user.id)) + 1 : 1;
-    const now = new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-
-    const userToAdd: User = {
-      id: nextId,
+    const payload: NewUserPayload = {
       name: newUser.name.trim(),
       email: newUser.email.trim(),
       plan: newUser.plan,
-      avatar: newUser.avatar || `https://i.pravatar.cc/150?u=${encodeURIComponent(newUser.email)}`,
-      dateCreated: now,
+      avatar: newUser.avatar || undefined,
     };
 
-    setUsers((prev) => [userToAdd, ...prev]);
-    setIsDrawerOpen(false);
-    setNewUser({ name: "", email: "", plan: "Free", avatar: "" });
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create user.");
+      }
+
+      const data = (await response.json()) as { user: UserRecord };
+      setUsers((prev) => [data.user, ...prev]);
+      setIsDrawerOpen(false);
+      setNewUser({ name: "", email: "", plan: "Free", avatar: "" });
+      setRequestError(null);
+    } catch {
+      setRequestError("Could not create user. Please try again.");
+    }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,6 +152,8 @@ export default function Users() {
           <p className="text-sm text-muted-foreground mt-2">
             Showing {filteredUsers.length} of {users.length} users
           </p>
+          {isLoading && <p className="text-xs text-muted-foreground mt-1">Loading users...</p>}
+          {requestError && <p className="text-xs text-red-500 mt-1">{requestError}</p>}
         </div>
 
         {/* Desktop Table - Hidden on Mobile */}
