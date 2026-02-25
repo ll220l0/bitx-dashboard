@@ -2,6 +2,14 @@
 
 Admin dashboard built with `Next.js`, `React`, `TypeScript`, `Tailwind`, `Radix UI`, and `Recharts`.
 
+## Architecture
+
+- App routes use the `app/` router:
+  - dashboard routes in `app/(dashboard)/*`
+  - auth route in `app/(auth)/login`
+- Route UI lives in `components/pages/*`
+- API routes are served from `pages/api/*`
+
 ## Requirements
 
 - `Node.js` LTS (`20.x` or `22.x`)

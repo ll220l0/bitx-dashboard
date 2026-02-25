@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import {
     HomeIcon,
     SettingsIcon,
@@ -70,7 +70,7 @@ const appList: AppItem[] = [
 export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const router = useRouter();
+    const pathname = usePathname();
     const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
     return (
         <>
@@ -143,7 +143,7 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
                                     <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
                                         {navItems.map((item) => {
                                             const Icon = item.icon;
-                                            const isActive = router.pathname === item.href;
+                                            const isActive = pathname === item.href;
 
                                             return (
                                                 <Link href={item.href || "#"} key={item.label}>
@@ -292,7 +292,7 @@ export function Sidebar({ className, defaultCollapsed = false }: SidebarProps) {
                         <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
                             {navItems.map((item) => {
                                 const Icon = item.icon;
-                                const isActive = router.pathname === item.href;
+                                const isActive = pathname === item.href;
 
                                 const button = (
                                     <Link href={item.href || "#"} key={item.label}>
