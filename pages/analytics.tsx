@@ -5,7 +5,8 @@ import { TrendingUpIcon, TrendingDownIcon, Download, Users2, Clock } from "lucid
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { ResponsiveChart } from "@/components/charts/responsive-chart";
 
 interface AnalyticsProps {
   isMiddleChatVisible?: boolean;
@@ -252,7 +253,7 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
               </div>
             </div>
             <div className="w-full h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveChart width="100%" height="100%">
                 <AreaChart
                   data={filteredData}
                   margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
@@ -294,7 +295,7 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
                     animationEasing="ease-in-out"
                   />
                 </AreaChart>
-              </ResponsiveContainer>
+              </ResponsiveChart>
             </div>
           </Card>
 
@@ -307,7 +308,7 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
               </div>
             </div>
             <div className="w-full h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveChart width="100%" height="100%">
                 <BarChart
                   data={downloadsData}
                   margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
@@ -348,7 +349,7 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
                     ))}
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
+              </ResponsiveChart>
             </div>
           </Card>
         </div>
@@ -397,7 +398,7 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
               </div>
             </div>
             <div className="w-full h-[280px] flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveChart width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={deviceData}
@@ -431,7 +432,7 @@ export default function Analytics({ isMiddleChatVisible = false, setIsMiddleChat
                     wrapperStyle={{ fontSize: '12px' }}
                   />
                 </PieChart>
-              </ResponsiveContainer>
+              </ResponsiveChart>
             </div>
           </Card>
 

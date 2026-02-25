@@ -8,10 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import Link from "next/link";
 import { useState, useMemo } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { statsCards, revenueData, recentUsers, checkoutConversionData } from '@/lib/mockData';
 import { motion, AnimatePresence } from "framer-motion";
 import { XIcon } from "lucide-react";
+import { ResponsiveChart } from "@/components/charts/responsive-chart";
 
 interface HomeProps {
   isMiddleChatVisible?: boolean;
@@ -128,7 +129,7 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
               </div>
             </div>
             <div className="w-full h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveChart width="100%" height="100%">
                 <AreaChart
                   data={filteredData}
                   margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
@@ -170,7 +171,7 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                     animationEasing="ease-in-out"
                   />
                 </AreaChart>
-              </ResponsiveContainer>
+              </ResponsiveChart>
             </div>
           </Card>
 
@@ -255,7 +256,7 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
               </div>
             </div>
             <div className="w-full h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveChart width="100%" height="100%">
                 <AreaChart
                   data={checkoutConversionData}
                   margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
@@ -295,7 +296,7 @@ export default function Home({ isMiddleChatVisible = false, setIsMiddleChatVisib
                     animationEasing="ease-in-out"
                   />
                 </AreaChart>
-              </ResponsiveContainer>
+              </ResponsiveChart>
             </div>
           </Card>
 
