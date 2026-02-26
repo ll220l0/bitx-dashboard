@@ -5,18 +5,23 @@ import { TrendingUpIcon, TrendingDownIcon, Download, Users2, Clock } from "lucid
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  type TooltipContentProps,
+} from "recharts";
 import { ResponsiveChart } from "@/components/charts/responsive-chart";
-
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    value: number;
-    payload: {
-      date?: string;
-    };
-  }>;
-}
+import { useI18n } from "@/lib/use-i18n";
 
 const statsCards = [
   {
@@ -170,39 +175,43 @@ const deviceData = [
   { name: "Tablet", value: 14191, color: "rgb(168, 85, 247)" },
 ];
 
-function VisitorsTooltip({ active, payload }: ChartTooltipProps) {
-  if (active && payload && payload.length > 0) {
-    return (
-      <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
-        <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
-        <div className="text-white dark:text-black text-sm font-bold">
-          Visitors: {payload[0].value.toLocaleString()}
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
-
 export default function Analytics() {
   const [timeRange, setTimeRange] = useState<'30' | '90'>('90');
+  const { formatDate, formatNumber, tx } = useI18n();
 
   // Filter data based on selected time range
   const filteredData = useMemo(() => {
     const days = timeRange === '30' ? 30 : 90;
     return visitorsData.slice(-days).map(d => ({
       ...d,
-      displayDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      displayDate: formatDate(d.date)
     }));
-  }, [timeRange]);
+  }, [formatDate, timeRange]);
+
+  const renderVisitorsTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
+    if (active && payload && payload.length > 0) {
+      const firstPoint = payload[0];
+      const pointPayload = firstPoint.payload as { displayDate?: string; date?: string } | undefined;
+      const label = pointPayload?.displayDate ?? pointPayload?.date ?? "";
+      const value = typeof firstPoint.value === "number" ? firstPoint.value : Number(firstPoint.value ?? 0);
+
+      return (
+        <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
+          <div className="text-xs text-white dark:text-black mb-1">{label}</div>
+          <div className="text-white dark:text-black text-sm font-bold">{tx("analytics.totalVisitors")}: {formatNumber(value)}</div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <>
       <div className='w-full sticky top-0 z-50 bg-white dark:bg-neutral-950 flex-shrink-0 flex flex-row h-16 items-center px-8 border-b border-neutral-200 dark:border-neutral-800'>
-        <h1 className='text-lg font-bold'>Analytics</h1>
+        <h1 className='text-lg font-bold'>{tx("analytics.title")}</h1>
         <div className="ml-4 flex gap-2">
           <Badge variant="outline" className="text-xs">
-            Last 30 Days
+            {tx("analytics.last30Days")}
           </Badge>
         </div>
       </div>
@@ -215,7 +224,12 @@ export default function Analytics() {
             <Card key={stat.title} className="p-5 hover:shadow-md transition-shadow border-none mb-0">
               <div className="flex items-start justify-between">
                 <div className="space-y-1 w-full">
-                  <p className="text-xs uppercase text-muted-foreground mb-8">{stat.title}</p>
+                  <p className="text-xs uppercase text-muted-foreground mb-8">
+                    {stat.title === "Total Visitors" && tx("analytics.totalVisitors")}
+                    {stat.title === "App Downloads" && tx("analytics.appDownloads")}
+                    {stat.title === "Active Users" && tx("analytics.activeUsers")}
+                    {stat.title === "Avg. Session" && tx("analytics.avgSession")}
+                  </p>
                   <p className="text-3xl font-bold mb-2">{stat.value}</p>
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-medium ${stat.trend === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
@@ -234,8 +248,8 @@ export default function Analytics() {
           <Card className="p-6 pb-0 flex-1 border-none">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold">Visitors Over Time</h2>
-                <p className="text-xs text-muted-foreground">Last {timeRange} Days</p>
+                <h2 className="text-sm font-semibold">{tx("analytics.visitorsOverTime")}</h2>
+                <p className="text-xs text-muted-foreground">{tx("dashboard.lastDays", { days: timeRange })}</p>
               </div>
               <div className="flex gap-2 bg-background p-1 rounded-lg">
                 <Button
@@ -287,7 +301,7 @@ export default function Analytics() {
                   <YAxis
                     hide={true}
                   />
-                  <Tooltip content={<VisitorsTooltip />} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
+                  <Tooltip content={renderVisitorsTooltip} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
                   <Area
                     type="monotone"
                     dataKey="visitors"
@@ -307,8 +321,8 @@ export default function Analytics() {
           <Card className="p-6 pb-0 border-none">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold">Downloads by Platform</h2>
-                <p className="text-xs text-muted-foreground">This Month</p>
+                <h2 className="text-sm font-semibold">{tx("analytics.downloadsByPlatform")}</h2>
+                <p className="text-xs text-muted-foreground">{tx("analytics.thisMonth")}</p>
               </div>
             </div>
             <div className="w-full h-[220px]">
@@ -364,9 +378,9 @@ export default function Analytics() {
           {/* Top Countries */}
           <Card className="bg-card border-none p-6 overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold">Top Countries</h2>
+              <h2 className="text-sm font-semibold">{tx("analytics.topCountries")}</h2>
               <Badge variant="outline" className="text-xs">
-                Last 30 Days
+                {tx("analytics.last30Days")}
               </Badge>
             </div>
             <div className="space-y-4">
@@ -377,7 +391,7 @@ export default function Analytics() {
                       <span className="text-2xl">{country.flag}</span>
                       <div>
                         <p className="text-sm font-medium">{country.country}</p>
-                        <p className="text-xs text-muted-foreground">{country.visitors.toLocaleString()} visitors</p>
+                        <p className="text-xs text-muted-foreground">{formatNumber(country.visitors)} {tx("analytics.visitors")}</p>
                       </div>
                     </div>
                     <span className="text-sm font-semibold">{country.percentage}%</span>
@@ -397,8 +411,8 @@ export default function Analytics() {
           <Card className="p-6 border-none">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold">Device Types</h2>
-                <p className="text-xs text-muted-foreground">Usage Distribution</p>
+                <h2 className="text-sm font-semibold">{tx("analytics.deviceTypes")}</h2>
+                <p className="text-xs text-muted-foreground">{tx("analytics.usageDistribution")}</p>
               </div>
             </div>
             <div className="w-full h-[280px] flex items-center justify-center">

@@ -19,8 +19,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { motion, AnimatePresence } from "framer-motion";
 import { seedUsers } from "@/lib/seed-data";
 import type { NewUserPayload, UserRecord } from "@/lib/types";
+import { useI18n } from "@/lib/use-i18n";
 
 export default function Users() {
+  const { tx, countLabel, userPlanLabel, formatStoredDate } = useI18n();
   const [users, setUsers] = useState<UserRecord[]>(seedUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -119,19 +121,19 @@ export default function Users() {
   return (
     <>
       <div className='w-full sticky top-0 z-50 bg-white dark:bg-neutral-950 flex-shrink-0 flex flex-row h-16 items-center px-8 border-b border-neutral-200 dark:border-neutral-800'>
-        <h1 className='text-lg font-bold'>Users</h1>
+        <h1 className='text-lg font-bold'>{tx("users.title")}</h1>
         <div className="ml-4 flex gap-2">
           <Badge variant="outline" className="text-xs">
-            {users.length} Users
+            {countLabel("users", users.length)}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {users.filter(u => u.plan === "Pro").length} Pro Users
+            {countLabel("proUsers", users.filter(u => u.plan === "Pro").length)}
           </Badge>
         </div>
         <div className="ml-auto flex gap-2">
           <Button size="sm" onClick={() => setIsDrawerOpen(true)}>
             <PlusIcon className="w-4 h-4 mr-2" />
-            Add User
+            {tx("users.addUser")}
           </Button>
         </div>
       </div>
@@ -143,16 +145,16 @@ export default function Users() {
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder={tx("users.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-11"
             />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Showing {filteredUsers.length} of {users.length} users
+            {tx("users.showing", { shown: filteredUsers.length, total: users.length })}
           </p>
-          {isLoading && <p className="text-xs text-muted-foreground mt-1">Loading users...</p>}
+          {isLoading && <p className="text-xs text-muted-foreground mt-1">{tx("users.loading")}</p>}
           {requestError && <p className="text-xs text-red-500 mt-1">{requestError}</p>}
         </div>
 
@@ -161,19 +163,19 @@ export default function Users() {
           <Table className="w-full">
             <TableHeader>
               <TableRow className="bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-900">
-                <TableHead className="w-[80px]">Avatar</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Date Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[80px]">{tx("common.image")}</TableHead>
+                <TableHead>{tx("common.name")}</TableHead>
+                <TableHead>{tx("common.email")}</TableHead>
+                <TableHead>{tx("common.plan")}</TableHead>
+                <TableHead>{tx("common.dateCreated")}</TableHead>
+                <TableHead className="text-right">{tx("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                    No users found matching your search.
+                    {tx("users.noResults")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -193,10 +195,10 @@ export default function Users() {
                     <TableCell className="text-sm">{user.email}</TableCell>
                     <TableCell>
                       <Badge variant={user.plan === "Pro" ? "default" : "outline"} className="text-xs">
-                        {user.plan}
+                        {userPlanLabel(user.plan)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{user.dateCreated}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{formatStoredDate(user.dateCreated)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Tooltip>
@@ -211,7 +213,7 @@ export default function Users() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Edit</p>
+                            <p>{tx("users.edit")}</p>
                           </TooltipContent>
                         </Tooltip>
                         <Tooltip>
@@ -227,7 +229,7 @@ export default function Users() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Send email</p>
+                            <p>{tx("users.sendEmail")}</p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
@@ -243,7 +245,7 @@ export default function Users() {
         <div className="md:hidden space-y-2">
           {filteredUsers.length === 0 ? (
             <Card className="p-8 text-center text-muted-foreground">
-              No users found matching your search.
+              {tx("users.noResults")}
             </Card>
           ) : (
             filteredUsers.map((user) => (
@@ -265,13 +267,13 @@ export default function Users() {
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                       </div>
                       <Badge variant={user.plan === "Pro" ? "default" : "outline"} className="text-xs flex-shrink-0">
-                        {user.plan}
+                        {userPlanLabel(user.plan)}
                       </Badge>
                     </div>
 
                     {/* Date and Actions */}
                     <div className="flex items-center justify-between mt-3">
-                      <p className="text-xs text-muted-foreground">{user.dateCreated}</p>
+                      <p className="text-xs text-muted-foreground">{formatStoredDate(user.dateCreated)}</p>
                       <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
@@ -323,7 +325,7 @@ export default function Users() {
               className="fixed right-0 top-0 h-full w-full md:w-[400px] bg-white dark:bg-neutral-950 shadow-xl z-50 border-l border-neutral-200 dark:border-neutral-800 flex flex-col">
             {/* Drawer Header */}
             <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
-              <h2 className="text-lg font-semibold">Add New User</h2>
+              <h2 className="text-lg font-semibold">{tx("users.addNewUser")}</h2>
               <Button
                 variant="ghost"
                 size="icon"
@@ -338,7 +340,7 @@ export default function Users() {
               <div className="space-y-4">
                 {/* Avatar Upload */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Profile Picture</label>
+                  <label className="text-sm font-medium mb-2 block">{tx("users.profilePicture")}</label>
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <Avatar className="w-20 h-20">
@@ -367,7 +369,7 @@ export default function Users() {
                           className="cursor-pointer"
                           onClick={() => document.getElementById('avatar-upload')?.click()}
                         >
-                          Choose Image
+                          {tx("users.chooseImage")}
                         </Button>
                       </label>
                       <p className="text-xs text-muted-foreground mt-2">
@@ -378,20 +380,20 @@ export default function Users() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Name</label>
+                  <label className="text-sm font-medium mb-2 block">{tx("common.name")}</label>
                   <Input
                     type="text"
-                    placeholder="Enter user name"
+                    placeholder={tx("users.enterUserName")}
                     value={newUser.name}
                     onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Email</label>
+                  <label className="text-sm font-medium mb-2 block">{tx("common.email")}</label>
                   <Input
                     type="email"
-                    placeholder="Enter user email"
+                    placeholder={tx("users.enterUserEmail")}
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                   />
@@ -405,14 +407,14 @@ export default function Users() {
                       className="flex-1"
                       onClick={() => setNewUser({ ...newUser, plan: "Free" })}
                     >
-                      Free
+                      {userPlanLabel("Free")}
                     </Button>
                     <Button
                       variant={newUser.plan === "Pro" ? "default" : "outline"}
                       className="flex-1"
                       onClick={() => setNewUser({ ...newUser, plan: "Pro" })}
                     >
-                      Pro
+                      {userPlanLabel("Pro")}
                     </Button>
                   </div>
                 </div>
@@ -421,21 +423,21 @@ export default function Users() {
 
             {/* Drawer Footer */}
             <div className="p-6 border-t border-neutral-200 dark:border-neutral-800 flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setIsDrawerOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleAddUser}
-                disabled={!newUser.name || !newUser.email}
-              >
-                Add User
-              </Button>
-            </div>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
+                  {tx("common.cancel")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleAddUser}
+                  disabled={!newUser.name || !newUser.email}
+                >
+                  {tx("users.addUser")}
+                </Button>
+              </div>
           </motion.div>
         </>
       )}

@@ -39,6 +39,9 @@ export interface NewProductPayload {
   sku: string;
 }
 
+export type DashboardLanguage = "ru" | "en" | "ky";
+export type DashboardCurrency = "USD" | "KGS" | "RUB" | "KZT";
+
 export interface DashboardSettings {
   firstName: string;
   lastName: string;
@@ -48,9 +51,7 @@ export interface DashboardSettings {
   emailNotifications: boolean;
   pushNotifications: boolean;
   weeklyDigest: boolean;
-  language: string;
-  timezone: string;
-  currency: string;
+  language: DashboardLanguage;
+  currency: DashboardCurrency;
   theme: "light" | "dark" | "system";
 }
-

@@ -25,6 +25,42 @@ function getDefaultData(): DashboardData {
   };
 }
 
+function sanitizeSettings(value: unknown): DashboardSettings {
+  const candidate = value && typeof value === "object" ? (value as Partial<DashboardSettings>) : {};
+  return {
+    firstName: typeof candidate.firstName === "string" ? candidate.firstName : seedSettings.firstName,
+    lastName: typeof candidate.lastName === "string" ? candidate.lastName : seedSettings.lastName,
+    email: typeof candidate.email === "string" ? candidate.email : seedSettings.email,
+    phone: typeof candidate.phone === "string" ? candidate.phone : seedSettings.phone,
+    company: typeof candidate.company === "string" ? candidate.company : seedSettings.company,
+    emailNotifications:
+      typeof candidate.emailNotifications === "boolean"
+        ? candidate.emailNotifications
+        : seedSettings.emailNotifications,
+    pushNotifications:
+      typeof candidate.pushNotifications === "boolean"
+        ? candidate.pushNotifications
+        : seedSettings.pushNotifications,
+    weeklyDigest:
+      typeof candidate.weeklyDigest === "boolean" ? candidate.weeklyDigest : seedSettings.weeklyDigest,
+    language:
+      candidate.language === "ru" || candidate.language === "en" || candidate.language === "ky"
+        ? candidate.language
+        : seedSettings.language,
+    currency:
+      candidate.currency === "USD" ||
+      candidate.currency === "KGS" ||
+      candidate.currency === "RUB" ||
+      candidate.currency === "KZT"
+        ? candidate.currency
+        : seedSettings.currency,
+    theme:
+      candidate.theme === "light" || candidate.theme === "dark" || candidate.theme === "system"
+        ? candidate.theme
+        : seedSettings.theme,
+  };
+}
+
 function ensureStore(): void {
   const storeDir = path.dirname(STORE_FILE);
   if (!fs.existsSync(storeDir)) {
@@ -45,7 +81,7 @@ function readStore(): DashboardData {
     return {
       users: Array.isArray(parsed.users) ? parsed.users : [...seedUsers],
       products: Array.isArray(parsed.products) ? parsed.products : [...seedProducts],
-      settings: { ...seedSettings, ...(parsed.settings || {}) },
+      settings: sanitizeSettings(parsed.settings),
     };
   } catch {
     return getDefaultData();
@@ -64,11 +100,7 @@ export function getUsers(): UserRecord[] {
 export function addUser(payload: NewUserPayload): UserRecord {
   const data = readStore();
   const nextId = data.users.length > 0 ? Math.max(...data.users.map((user) => user.id)) + 1 : 1;
-  const dateCreated = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const dateCreated = new Date().toISOString().slice(0, 10);
 
   const user: UserRecord = {
     id: nextId,
@@ -116,7 +148,7 @@ export function getSettings(): DashboardSettings {
 
 export function saveSettings(nextSettings: DashboardSettings): DashboardSettings {
   const data = readStore();
-  data.settings = { ...nextSettings };
+  data.settings = sanitizeSettings(nextSettings);
   writeStore(data);
   return data.settings;
 }
@@ -124,4 +156,3 @@ export function saveSettings(nextSettings: DashboardSettings): DashboardSettings
 export function resetStoreForTests(): void {
   writeStore(getDefaultData());
 }
-

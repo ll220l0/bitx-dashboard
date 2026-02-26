@@ -20,11 +20,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { seedProducts } from "@/lib/seed-data";
 import type { NewProductPayload, ProductRecord } from "@/lib/types";
+import { useI18n } from "@/lib/use-i18n";
 
 const categories = ["Electronics", "Footwear", "Accessories", "Bags", "Clothing", "Home & Living"];
 const statusOptions = ["In Stock", "Low Stock", "Out of Stock"] as const;
 
 export default function Products() {
+  const {
+    tx,
+    formatCurrency,
+    countLabel,
+    productCategoryLabel,
+    productStatusLabel,
+  } = useI18n();
   const [products, setProducts] = useState<ProductRecord[]>(seedProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -155,16 +163,16 @@ export default function Products() {
   return (
     <>
       <div className='w-full sticky top-0 z-50 bg-white dark:bg-neutral-950 flex-shrink-0 flex flex-row h-16 items-center px-8 border-b border-neutral-200 dark:border-neutral-800'>
-        <h1 className='text-lg font-bold'>Products</h1>
+        <h1 className='text-lg font-bold'>{tx("products.title")}</h1>
         <div className="ml-4 flex gap-2">
           <Badge variant="outline" className="text-xs">
-            {products.length} Products
+            {countLabel("products", products.length)}
           </Badge>
         </div>
         <div className="ml-auto flex gap-2">
           <Button size="sm" onClick={() => setIsDrawerOpen(true)}>
             <PlusIcon className="w-4 h-4 mr-2" />
-            Add Product
+            {tx("products.addProduct")}
           </Button>
         </div>
       </div>
@@ -176,16 +184,16 @@ export default function Products() {
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search by name, category, or SKU..."
+              placeholder={tx("products.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-11"
             />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Showing {filteredProducts.length} of {products.length} products
+            {tx("products.showing", { shown: filteredProducts.length, total: products.length })}
           </p>
-          {isLoading && <p className="text-xs text-muted-foreground mt-1">Loading products...</p>}
+          {isLoading && <p className="text-xs text-muted-foreground mt-1">{tx("products.loading")}</p>}
           {requestError && <p className="text-xs text-red-500 mt-1">{requestError}</p>}
         </div>
 
@@ -194,20 +202,20 @@ export default function Products() {
           <Table className="w-full">
             <TableHeader>
               <TableRow className="bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-900">
-                <TableHead className="w-[100px]">Image</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[100px]">{tx("common.image")}</TableHead>
+                <TableHead>{tx("products.product")}</TableHead>
+                <TableHead>{tx("common.category")}</TableHead>
+                <TableHead>{tx("common.price")}</TableHead>
+                <TableHead>{tx("common.stock")}</TableHead>
+                <TableHead>{tx("common.status")}</TableHead>
+                <TableHead className="text-right">{tx("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredProducts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                    No products found matching your search.
+                    {tx("products.noResults")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -230,12 +238,12 @@ export default function Products() {
                         <p className="text-xs text-muted-foreground">{product.sku}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{product.category}</TableCell>
-                    <TableCell className="text-sm font-medium">${product.price}</TableCell>
+                    <TableCell className="text-sm">{productCategoryLabel(product.category)}</TableCell>
+                    <TableCell className="text-sm font-medium">{formatCurrency(product.price)}</TableCell>
                     <TableCell className="text-sm">{product.stock}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`text-xs ${getStatusBadge(product.status)}`}>
-                        {product.status}
+                        {productStatusLabel(product.status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -252,7 +260,7 @@ export default function Products() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>View Details</p>
+                            <p>{tx("products.viewDetails")}</p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
@@ -268,7 +276,7 @@ export default function Products() {
         <div className="md:hidden space-y-2">
           {filteredProducts.length === 0 ? (
             <Card className="p-8 text-center text-muted-foreground border-none">
-              No products found matching your search.
+              {tx("products.noResults")}
             </Card>
           ) : (
             filteredProducts.map((product) => (
@@ -291,18 +299,18 @@ export default function Products() {
                       <div className="min-w-0 flex-1">
                         <h3 className="font-semibold text-sm truncate">{product.name}</h3>
                         <p className="text-xs text-muted-foreground">{product.sku}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{product.category}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{productCategoryLabel(product.category)}</p>
                       </div>
                       <Badge variant="outline" className={`text-xs flex-shrink-0 ${getStatusBadge(product.status)}`}>
-                        {product.status}
+                        {productStatusLabel(product.status)}
                       </Badge>
                     </div>
 
                     {/* Price, Stock and Actions */}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-3">
-                        <p className="text-sm font-semibold">${product.price}</p>
-                        <span className="text-xs text-muted-foreground">Stock: {product.stock}</span>
+                        <p className="text-sm font-semibold">{formatCurrency(product.price)}</p>
+                        <span className="text-xs text-muted-foreground">{tx("products.stockLabel", { count: product.stock })}</span>
                       </div>
                       <Button
                         variant="ghost"
@@ -344,7 +352,7 @@ export default function Products() {
               className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-white dark:bg-neutral-950 shadow-xl z-50 border-l border-neutral-200 dark:border-neutral-800 flex flex-col">
               {/* Drawer Header */}
               <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
-                <h2 className="text-lg font-semibold">Add New Product</h2>
+                <h2 className="text-lg font-semibold">{tx("products.addNewProduct")}</h2>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -359,7 +367,7 @@ export default function Products() {
                 <div className="space-y-4">
                   {/* Product Image */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Product Image</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("products.productImage")}</label>
                     <div className="flex items-center gap-4">
                       <div className="relative w-24 h-24 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 overflow-hidden">
                         {newProduct.image ? (
@@ -391,7 +399,7 @@ export default function Products() {
                           size="sm"
                           onClick={() => document.getElementById('product-image-upload')?.click()}
                         >
-                          Choose Image
+                          {tx("products.chooseImage")}
                         </Button>
                         <p className="text-xs text-muted-foreground mt-2">
                           JPG, PNG or WEBP. Max 5MB.
@@ -402,10 +410,10 @@ export default function Products() {
 
                   {/* Product Name */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Product Name</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("products.productName")}</label>
                     <Input
                       type="text"
-                      placeholder="Enter product name"
+                      placeholder={tx("products.enterProductName")}
                       value={newProduct.name}
                       onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
                     />
@@ -413,10 +421,10 @@ export default function Products() {
 
                   {/* SKU */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">SKU</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("products.sku")}</label>
                     <Input
                       type="text"
-                      placeholder="e.g., PRD-2024-001"
+                      placeholder={tx("products.enterSku")}
                       value={newProduct.sku}
                       onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
                     />
@@ -424,7 +432,7 @@ export default function Products() {
 
                   {/* Category Dropdown */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Category</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("common.category")}</label>
                     <select
                       className="w-full h-10 px-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-sm"
                       value={newProduct.category}
@@ -432,7 +440,7 @@ export default function Products() {
                     >
                       {categories.map((cat) => (
                         <option key={cat} value={cat}>
-                          {cat}
+                          {productCategoryLabel(cat)}
                         </option>
                       ))}
                     </select>
@@ -440,7 +448,7 @@ export default function Products() {
 
                   {/* Price */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Price</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("common.price")}</label>
                     <div className="relative">
                       <DollarSignIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
@@ -455,7 +463,7 @@ export default function Products() {
 
                   {/* Stock */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Stock Quantity</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("products.stockQuantity")}</label>
                     <Input
                       type="number"
                       placeholder="0"
@@ -466,7 +474,7 @@ export default function Products() {
 
                   {/* Status */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Status</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("common.status")}</label>
                     <div className="flex gap-2">
                       {statusOptions.map((status) => (
                         <Button
@@ -476,7 +484,7 @@ export default function Products() {
                           className="flex-1"
                           onClick={() => setNewProduct({ ...newProduct, status })}
                         >
-                          {status}
+                          {productStatusLabel(status)}
                         </Button>
                       ))}
                     </div>
@@ -484,9 +492,9 @@ export default function Products() {
 
                   {/* Description */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Description</label>
+                    <label className="text-sm font-medium mb-2 block">{tx("products.description")}</label>
                     <Textarea
-                      placeholder="Enter product description..."
+                      placeholder={tx("products.enterDescription")}
                       rows={4}
                       value={newProduct.description}
                       onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
@@ -502,14 +510,14 @@ export default function Products() {
                   className="flex-1"
                   onClick={() => setIsDrawerOpen(false)}
                 >
-                  Cancel
+                  {tx("common.cancel")}
                 </Button>
                 <Button
                   className="flex-1"
                   onClick={handleAddProduct}
                   disabled={!newProduct.name || !newProduct.sku || !newProduct.price}
                 >
-                  Add Product
+                  {tx("products.addProduct")}
                 </Button>
               </div>
             </motion.div>

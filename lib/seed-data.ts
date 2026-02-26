@@ -7,7 +7,7 @@ export const seedUsers: UserRecord[] = [
     name: "Sarah Thompson",
     email: "sarah.thompson@example.com",
     plan: "Pro",
-    dateCreated: "Dec 15, 2025",
+    dateCreated: "2025-12-15",
   },
   {
     id: 2,
@@ -15,7 +15,7 @@ export const seedUsers: UserRecord[] = [
     name: "Michael Chen",
     email: "michael.chen@example.com",
     plan: "Pro",
-    dateCreated: "Dec 12, 2025",
+    dateCreated: "2025-12-12",
   },
   {
     id: 3,
@@ -23,7 +23,7 @@ export const seedUsers: UserRecord[] = [
     name: "Emma Wilson",
     email: "emma.wilson@example.com",
     plan: "Free",
-    dateCreated: "Dec 10, 2025",
+    dateCreated: "2025-12-10",
   },
   {
     id: 4,
@@ -31,7 +31,7 @@ export const seedUsers: UserRecord[] = [
     name: "Carlos Rodriguez",
     email: "carlos.rodriguez@example.com",
     plan: "Pro",
-    dateCreated: "Dec 8, 2025",
+    dateCreated: "2025-12-08",
   },
   {
     id: 5,
@@ -39,7 +39,7 @@ export const seedUsers: UserRecord[] = [
     name: "Yuki Tanaka",
     email: "yuki.tanaka@example.com",
     plan: "Free",
-    dateCreated: "Dec 5, 2025",
+    dateCreated: "2025-12-05",
   },
   {
     id: 6,
@@ -47,7 +47,7 @@ export const seedUsers: UserRecord[] = [
     name: "Sophie Dubois",
     email: "sophie.dubois@example.com",
     plan: "Pro",
-    dateCreated: "Dec 3, 2025",
+    dateCreated: "2025-12-03",
   },
 ];
 
@@ -104,8 +104,6 @@ export const seedSettings: DashboardSettings = {
   pushNotifications: true,
   weeklyDigest: true,
   language: "en",
-  timezone: "America/New_York",
   currency: "USD",
   theme: "system",
 };
-

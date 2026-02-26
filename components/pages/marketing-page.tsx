@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { PlusIcon, SearchIcon, EditIcon, BellIcon, CalendarIcon, UsersIcon, PlayIcon, SmartphoneIcon, TargetIcon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useI18n } from "@/lib/use-i18n";
 
 interface Campaign {
   id: number;
@@ -125,17 +126,15 @@ const getStatusColor = (status: string) => {
   return colors[status] || "bg-neutral-500/20 text-neutral-700 dark:text-neutral-400 border-neutral-500/30";
 };
 
-const getFrequencyLabel = (frequency?: string) => {
-  const labels: Record<string, string> = {
-    daily: "Daily",
-    weekly: "Weekly",
-    "bi-weekly": "Bi-Weekly",
-    monthly: "Monthly",
-  };
-  return labels[frequency || ""] || "One-Time";
-};
-
 export default function Marketing() {
+  const {
+    tx,
+    formatDate,
+    countLabel,
+    campaignTypeLabel,
+    campaignFrequencyLabel,
+    campaignStatusLabel,
+  } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCampaigns = mockCampaigns.filter(
@@ -146,25 +145,20 @@ export default function Marketing() {
       campaign.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  };
-
   return (
     <>
       <div className='w-full sticky top-0 z-50 bg-white dark:bg-neutral-950 flex-shrink-0 flex flex-row h-16 items-center px-8 border-b border-neutral-200 dark:border-neutral-800'>
-        <h1 className='text-lg font-bold'>Marketing</h1>
+        <h1 className='text-lg font-bold'>{tx("marketing.title")}</h1>
         <div className="ml-4 flex gap-2">
           <Badge variant="outline" className="text-xs">
-            {mockCampaigns.length} Campaigns
+            {countLabel("campaigns", mockCampaigns.length)}
           </Badge>
          
         </div>
         <div className="ml-auto flex gap-2">
           <Button size="sm">
             <PlusIcon className="w-4 h-4 mr-2" />
-            New
+            {tx("common.new")}
           </Button>
         </div>
       </div>
@@ -176,14 +170,14 @@ export default function Marketing() {
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search campaigns by name, type, or status..."
+              placeholder={tx("marketing.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-11"
             />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Showing {filteredCampaigns.length} of {mockCampaigns.length} campaigns
+            {tx("marketing.showing", { shown: filteredCampaigns.length, total: mockCampaigns.length })}
           </p>
         </div>
 
@@ -192,18 +186,18 @@ export default function Marketing() {
           <Table className="w-full">
             <TableHeader>
               <TableRow className="bg-neutral-50 dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-900">
-                <TableHead>Campaign Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Frequency</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{tx("marketing.campaignName")}</TableHead>
+                <TableHead>{tx("marketing.type")}</TableHead>
+                <TableHead>{tx("marketing.frequency")}</TableHead>
+                <TableHead>{tx("marketing.status")}</TableHead>
+                <TableHead className="text-right">{tx("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCampaigns.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
-                    No campaigns found matching your search.
+                    {tx("marketing.noResults")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -216,12 +210,12 @@ export default function Marketing() {
                           {campaign.frequency && (
                             <p className="text-xs text-muted-foreground flex items-center gap-1">
                               <CalendarIcon className="w-3 h-3" />
-                              Recurring
+                              {tx("marketing.recurring")}
                             </p>
                           )}
                           {campaign.nextSend ? (
                             <div className="flex items-center gap-1.5 ml-4 text-muted-foreground">
-                              Next: {formatDate(campaign.nextSend)}
+                              {tx("marketing.next")}: {formatDate(campaign.nextSend, { month: "short", day: "numeric", year: "numeric" })}
                             </div>
                           ) : (
                             <span className="text-muted-foreground"></span>
@@ -235,17 +229,14 @@ export default function Marketing() {
                         {campaign.type === "in-app" && <SmartphoneIcon className="w-3 h-3" />}
                         {campaign.type === "acquisition" && <UsersIcon className="w-3 h-3" />}
                         {campaign.type === "retargeting" && <TargetIcon className="w-3 h-3" />}
-                        {campaign.type === "push-notification" && "Push"}
-                        {campaign.type === "in-app" && "In-App"}
-                        {campaign.type === "acquisition" && "Acquisition"}
-                        {campaign.type === "retargeting" && "Retargeting"}
+                        {campaignTypeLabel(campaign.type)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm">
                       {campaign.frequency ? (
                         <div className="flex items-center gap-1.5">
                           <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                          {getFrequencyLabel(campaign.frequency)}
+                          {campaignFrequencyLabel(campaign.frequency)}
                         </div>
                       ) : (
                         <span className="text-muted-foreground">-</span>
@@ -253,7 +244,7 @@ export default function Marketing() {
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(campaign.status)}>
-                        {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+                        {campaignStatusLabel(campaign.status)}
                       </Badge>
                     </TableCell>
 
@@ -273,7 +264,7 @@ export default function Marketing() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Edit</p>
+                            <p>{tx("users.edit")}</p>
                           </TooltipContent>
                         </Tooltip>
                         <Tooltip>
@@ -289,7 +280,7 @@ export default function Marketing() {
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Launch Campaign</p>
+                            <p>{tx("marketing.launch")}</p>
                           </TooltipContent>
                         </Tooltip>
                       </div>
@@ -305,7 +296,7 @@ export default function Marketing() {
         <div className="md:hidden space-y-2">
           {filteredCampaigns.length === 0 ? (
             <Card className="p-8 text-center text-muted-foreground border-none">
-              No campaigns found matching your search.
+              {tx("marketing.noResults")}
             </Card>
           ) : (
             filteredCampaigns.map((campaign) => (
@@ -321,28 +312,25 @@ export default function Marketing() {
                           {campaign.type === "in-app" && <SmartphoneIcon className="w-3 h-3" />}
                           {campaign.type === "acquisition" && <UsersIcon className="w-3 h-3" />}
                           {campaign.type === "retargeting" && <TargetIcon className="w-3 h-3" />}
-                          {campaign.type === "push-notification" && "Push"}
-                          {campaign.type === "in-app" && "In-App"}
-                          {campaign.type === "acquisition" && "Acquisition"}
-                          {campaign.type === "retargeting" && "Retargeting"}
+                          {campaignTypeLabel(campaign.type)}
                         </Badge>
                         {campaign.frequency && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <CalendarIcon className="w-3 h-3" />
-                            {getFrequencyLabel(campaign.frequency)}
+                            {campaignFrequencyLabel(campaign.frequency)}
                           </span>
                         )}
                       </div>
                     </div>
                     <Badge className={`${getStatusColor(campaign.status)} flex-shrink-0`}>
-                      {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+                      {campaignStatusLabel(campaign.status)}
                     </Badge>
                   </div>
 
                   {/* Next Send Date */}
                   {campaign.nextSend && (
                     <p className="text-xs text-muted-foreground">
-                      Next: {formatDate(campaign.nextSend)}
+                      {tx("marketing.next")}: {formatDate(campaign.nextSend, { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                   )}
 
@@ -355,7 +343,7 @@ export default function Marketing() {
                       aria-label="Edit campaign"
                     >
                       <EditIcon className="h-4 w-4 mr-1" />
-                      Edit
+                      {tx("users.edit")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -365,7 +353,7 @@ export default function Marketing() {
                       disabled={campaign.status === "draft"}
                     >
                       <PlayIcon className="h-4 w-4 mr-1" />
-                      Launch
+                      {tx("marketing.launch")}
                     </Button>
                   </div>
                 </div>

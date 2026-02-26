@@ -1,11 +1,13 @@
 import { DynamicIcon } from "lucide-react/dynamic";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/use-i18n";
 
 interface SpotlightProps {
     onClose: () => void;
 }
 
 export function Spotlight({ onClose }: SpotlightProps) {
+    const { tx } = useI18n();
     return (
         <div className="fixed top-0 left-0 w-full h-full bg-black/70 z-[999999] flex items-center justify-center">
             <motion.div
@@ -17,7 +19,7 @@ export function Spotlight({ onClose }: SpotlightProps) {
                 <DynamicIcon name="search" className="size-5 absolute top-4.5 left-4 ml-1 text-muted-foreground" />
                 <input 
                 autoFocus
-                type="text" placeholder="Search users, products, campaigns, etc."
+                type="text" placeholder={tx("spotlight.searchPlaceholder")}
                     className="flex transition-all shadow-xl outline-none bg-card border border-border  w-full  duration-300 ease-in-out cursor-pointer hover:bg-card flex-row items-center p-4 pl-14 border border-border rounded-lg" />
 
 

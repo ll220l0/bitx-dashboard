@@ -8,67 +8,90 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import Link from "next/link";
 import { useState, useMemo } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, type TooltipContentProps } from "recharts";
 import { statsCards, revenueData, recentUsers, checkoutConversionData } from '@/lib/mockData';
 import { motion, AnimatePresence } from "framer-motion";
 import { XIcon } from "lucide-react";
 import { ResponsiveChart } from "@/components/charts/responsive-chart";
+import { useI18n } from "@/lib/use-i18n";
 
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    value: number;
-    payload: {
-      date?: string;
-    };
-  }>;
-}
-
-function MrrTooltip({ active, payload }: ChartTooltipProps) {
-  if (active && payload && payload.length > 0) {
-    return (
-      <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
-        <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
-        <div className="text-white dark:text-black text-sm font-bold">
-          MRR: ${payload[0].value.toLocaleString()}
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
-
-function CheckoutTooltip({ active, payload }: ChartTooltipProps) {
-  if (active && payload && payload.length > 0) {
-    return (
-      <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
-        <div className="text-xs text-white dark:text-black mb-1">{payload[0].payload.date}</div>
-        <div className="text-white dark:text-black text-sm font-bold">
-          Rate: {payload[0].value.toFixed(2)}%
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
+type TooltipPayloadItem = {
+  date?: string;
+  displayDate?: string;
+};
 
 export default function Home() {
   const [timeRange, setTimeRange] = useState<'30' | '90'>('90');
   const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
+  const { settings, formatCurrency, formatDate, tx, userPlanLabel, relativeTimeLabel } = useI18n();
+
+  const localizeStatTitle = (title: string) => {
+    if (title === "MRR") {
+      return "MRR";
+    }
+    if (title === "APPU (Power Users)") {
+      return tx("analytics.activeUsers");
+    }
+    if (title === "Free -> Paid Conv.") {
+      return tx("dashboard.checkoutConversionRate");
+    }
+    if (title === "Failed Dictations") {
+      return "Failed Dictations";
+    }
+    return title;
+  };
+
+  const renderMrrTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
+    if (active && payload && payload.length > 0) {
+      const firstPoint = payload[0];
+      const pointPayload = firstPoint.payload as TooltipPayloadItem | undefined;
+      const label = pointPayload?.displayDate ?? pointPayload?.date ?? "";
+      const value = typeof firstPoint.value === "number" ? firstPoint.value : Number(firstPoint.value ?? 0);
+
+      return (
+        <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
+          <div className="text-xs text-white dark:text-black mb-1">{label}</div>
+          <div className="text-white dark:text-black text-sm font-bold">
+            MRR: {formatCurrency(value)}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderCheckoutTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
+    if (active && payload && payload.length > 0) {
+      const firstPoint = payload[0];
+      const pointPayload = firstPoint.payload as TooltipPayloadItem | undefined;
+      const label = pointPayload?.displayDate ?? pointPayload?.date ?? "";
+      const value = typeof firstPoint.value === "number" ? firstPoint.value : Number(firstPoint.value ?? 0);
+
+      return (
+        <div className="bg-neutral-900 dark:bg-neutral-100 text-white dark:text-black px-3 py-2 rounded-lg shadow-lg text-xs border border-neutral-700 dark:border-neutral-300">
+          <div className="text-xs text-white dark:text-black mb-1">{label}</div>
+          <div className="text-white dark:text-black text-sm font-bold">
+            Rate: {value.toFixed(2)}%
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Filter data based on selected time range
   const filteredData = useMemo(() => {
     const days = timeRange === '30' ? 30 : 90;
     return revenueData.slice(-days).map(d => ({
       ...d,
-      displayDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      displayDate: formatDate(d.date)
     }));
-  }, [timeRange]);
+  }, [formatDate, timeRange]);
 
   return (
     <>
       <div className='w-full sticky top-0 z-50 bg-white dark:bg-neutral-950 flex-shrink-0 flex flex-row h-16 items-center px-8 border-b border-neutral-200 dark:border-neutral-800'>
-        <h1 className='text-lg font-bold'>Welcome back, John</h1>
+        <h1 className='text-lg font-bold'>{tx("dashboard.welcomeBack")}</h1>
         <div className="ml-auto">
           <Button
             variant="outline"
@@ -77,7 +100,7 @@ export default function Home() {
             onClick={() => setIsAIDrawerOpen(true)}
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            AI Insights
+            {tx("dashboard.aiInsights")}
           </Button>
         </div>
       </div>
@@ -90,8 +113,8 @@ export default function Home() {
             <Card key={stat.title} className="p-5 hover:shadow-md transition-shadow border-none mb-0">
               <div className="flex items-start justify-between">
                 <div className="space-y-1 w-full">
-                  <p className="text-xs uppercase text-muted-foreground mb-8">{stat.title}</p>
-                  <p className="text-3xl font-bold mb-2">{stat.value}</p>
+                  <p className="text-xs uppercase text-muted-foreground mb-8">{localizeStatTitle(stat.title)}</p>
+                  <p className="text-3xl font-bold mb-2">{stat.title === "MRR" ? formatCurrency(1760) : stat.value}</p>
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-medium ${stat.trend === "up" ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
                       {stat.trend === "up" && <TrendingUpIcon className="w-3 h-3 inline mr-1" />}
@@ -109,8 +132,8 @@ export default function Home() {
           <Card className="p-6 pb-0 flex-1 border-none">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold">MRR Growth (USD)</h2>
-                <p className="text-xs text-muted-foreground">Last {timeRange} Days</p>
+                <h2 className="text-sm font-semibold">{tx("dashboard.mrrGrowth")} ({settings.currency})</h2>
+                <p className="text-xs text-muted-foreground">{tx("dashboard.lastDays", { days: timeRange })}</p>
               </div>
               <div className="flex gap-2 bg-background p-1 rounded-lg">
                 <Button
@@ -162,7 +185,7 @@ export default function Home() {
                   <YAxis
                     hide={true}
                   />
-                  <Tooltip content={<MrrTooltip />} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
+                  <Tooltip content={renderMrrTooltip} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
                   <Area
                     type="monotone"
                     dataKey="mrr"
@@ -181,9 +204,9 @@ export default function Home() {
           {/* Recent Users */}
           <Card className="bg-card border-none p-0 overflow-hidden md:flex-1">
             <div className="flex items-center justify-between bg-card px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-              <h2 className="text-sm font-semibold">Recent Users</h2>
+              <h2 className="text-sm font-semibold">{tx("dashboard.recentUsers")}</h2>
               <Link href="/users" className="flex flex-row items-center gap-1 text-xs">
-                View All
+                {tx("common.viewAll")}
                 <ArrowRightIcon className="w-3 h-3 ml-1" />
               </Link>
             </div>
@@ -203,10 +226,10 @@ export default function Home() {
                     <p className="font-medium text-sm truncate">{user.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground mr-10">{user.signedUp}</span>
+                  <span className="text-xs text-muted-foreground mr-10">{relativeTimeLabel(user.signedUp)}</span>
                   <div className="flex flex-col items-end gap-1">
                     <Badge variant={user.plan === "Pro" ? "default" : "outline"} className="text-xs">
-                      {user.plan}
+                      {userPlanLabel(user.plan as "Free" | "Pro")}
                     </Badge>
                     
                   </div>
@@ -222,15 +245,15 @@ export default function Home() {
           {/* Account Balance */}
           <Card className="p-6 border-none flex flex-col">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold">Account Balance</h2>
+              <h2 className="text-sm font-semibold">{tx("dashboard.accountBalance")}</h2>
               <Button size="sm" variant="default" className="h-8 text-xs bg-sky-500 text-white">
-                Withdraw
+                {tx("dashboard.withdraw")}
               </Button>
             </div>
 
               <div>
-                <p className="text-4xl font-semibold">$655.19</p>
-                <p className="text-xs text-muted-foreground mt-1">Available to withdraw</p>
+                <p className="text-4xl font-semibold">{formatCurrency(655.19)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{tx("dashboard.availableToWithdraw")}</p>
               </div>
               <div className="pt-4 mt-auto">
                 <div className="bg-secondary p-4 rounded-lg">
@@ -238,11 +261,11 @@ export default function Home() {
                     <div className="flex items-center gap-3">
                      
                       <div>
-                        <p className="text-lg ">$11,651.42</p>
-                        <p className="text-xs text-muted-foreground">Jan 5, 2026</p>
+                        <p className="text-lg ">{formatCurrency(11651.42)}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate("2026-01-05", { month: "short", day: "numeric", year: "numeric" })}</p>
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-2 rounded-md">Succeeded</span>
+                    <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-2 rounded-md">{tx("dashboard.succeeded")}</span>
                   </div>
                 </div>
               </div>
@@ -254,8 +277,8 @@ export default function Home() {
           <Card className="p-6 pb-0 border-none">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-semibold">Checkout Conversion Rate</h2>
-                <p className="text-xs text-muted-foreground">Last 31 Days</p>
+                <h2 className="text-sm font-semibold">{tx("dashboard.checkoutConversionRate")}</h2>
+                <p className="text-xs text-muted-foreground">{tx("dashboard.last31Days")}</p>
               </div>
             </div>
             <div className="w-full h-[220px]">
@@ -287,7 +310,7 @@ export default function Home() {
                     interval={4}
                   />
                   <YAxis hide={true} />
-                  <Tooltip content={<CheckoutTooltip />} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
+                  <Tooltip content={renderCheckoutTooltip} cursor={{ stroke: 'rgb(59, 130, 246)', strokeWidth: 1 }} />
                   <Area
                     type="monotone"
                     dataKey="rate"
@@ -335,7 +358,7 @@ export default function Home() {
               <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-5 h-5" />
-                  <h2 className="text-lg font-semibold">AI Insights</h2>
+                  <h2 className="text-lg font-semibold">{tx("dashboard.aiInsights")}</h2>
                 </div>
                 <Button
                   variant="ghost"
@@ -355,7 +378,7 @@ export default function Home() {
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex gap-2">
                         <span className="text-foreground">-</span>
-                        <span>Your MRR is growing steadily at $1,760, up 3.4% from last week</span>
+                        <span>Your MRR is growing steadily at {formatCurrency(1760)}, up 3.4% from last week</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-foreground">-</span>
@@ -393,11 +416,14 @@ export default function Home() {
                     <ul className="space-y-2 text-sm text-muted-foreground">
                       <li className="flex gap-2">
                         <span className="text-foreground">-</span>
-                        <span>Account balance of $655.19 is available for withdrawal</span>
+                        <span>Account balance of {formatCurrency(655.19)} is available for withdrawal</span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-foreground">-</span>
-                        <span>Last successful transaction was $11,651.42 on Jan 5, 2026</span>
+                        <span>
+                          Last successful transaction was {formatCurrency(11651.42)} on{" "}
+                          {formatDate("2026-01-05", { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
                       </li>
                       <li className="flex gap-2">
                         <span className="text-foreground">-</span>
